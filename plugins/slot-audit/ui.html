@@ -1,0 +1,39 @@
+<style>
+  * { box-sizing: border-box; }
+  body { font: 12px/1.45 Inter, system-ui, sans-serif; margin: 0; padding: 14px; color: var(--figma-color-text, #1e1e1e); background: var(--figma-color-bg, #fff); }
+  h2 { font-size: 13px; margin: 0 0 2px; }
+  p.lead { margin: 0 0 12px; color: var(--figma-color-text-secondary, #666); }
+  .opt { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  .opt > label:first-child { flex: 1; }
+  select { font: inherit; padding: 4px 6px; border-radius: 5px; border: 1px solid var(--figma-color-border, #e5e5e5); background: var(--figma-color-bg, #fff); color: var(--figma-color-text, #1e1e1e); }
+  button { white-space: nowrap; font: inherit; font-weight: 600; padding: 7px 12px; border: 0; border-radius: 6px; cursor: pointer; background: var(--figma-color-bg-brand, #0d99ff); color: var(--figma-color-text-onbrand, #fff); }
+  button.secondary { background: var(--figma-color-bg-secondary, #f0f0f0); color: var(--figma-color-text, #1e1e1e); }
+  button.small { padding: 4px 8px; font-size: 11px; }
+  #status { margin: 10px 0; min-height: 16px; color: var(--figma-color-text-secondary, #666); white-space: pre-wrap; }
+  #status.error { color: var(--figma-color-text-danger, #d92d20); }
+  .sum { font-weight: 600; margin: 4px 0 8px; }
+  .slot { border: 1px solid var(--figma-color-border, #e5e5e5); border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+  .slot .hd { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+  .slot .hd b { font-size: 12px; }
+  .slot .uses { margin-left: auto; color: var(--figma-color-text-secondary, #666); }
+  .tag { font-size: 10px; padding: 2px 6px; border-radius: 10px; background: var(--figma-color-bg-secondary, #f0f0f0); }
+  .tag.none { background: var(--figma-color-bg-warning-tertiary, #fff4d6); color: var(--figma-color-text-warning, #8a5a00); }
+  .viol { margin: 6px 0 2px; color: var(--figma-color-text-danger, #b42318); }
+  .viol a, .slot a { color: var(--figma-color-text-brand, #007be5); cursor: pointer; margin-left: 4px; }
+  .bars { margin-top: 8px; }
+  .bar { display: grid; grid-template-columns: 1fr 120px 36px; gap: 8px; align-items: center; margin: 3px 0; font-size: 11px; }
+  .bar .t { height: 6px; border-radius: 3px; background: var(--figma-color-bg-secondary, #eee); overflow: hidden; }
+  .bar .t i { display: block; height: 100%; background: var(--figma-color-bg-brand, #0d99ff); }
+  .bar.raw .t i { background: var(--figma-color-bg-warning, #f5a623); }
+  .bar .n { text-align: right; color: var(--figma-color-text-secondary, #666); font-variant-numeric: tabular-nums; }
+  .act { display: flex; gap: 8px; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--figma-color-border, #eee); flex-wrap: wrap; }
+  .act span { color: var(--figma-color-text-secondary, #666); flex: 1; min-width: 180px; }
+</style>
+<h2>Slot audit</h2>
+<p class="lead">Across the file: every broken slot limit in one list, slots with no rules, what people actually put in each slot, and preferred components set from that usage.</p>
+<div class="opt"><label for="scope">Scan</label><select id="scope"><option value="page">This page</option><option value="file" selected>Every page</option></select></div>
+<div class="opt"><label for="share">Suggest as preferred when used in</label><select id="share"><option value="0.05">5% of slots</option><option value="0.1" selected>10% of slots</option><option value="0.25">25% of slots</option></select></div>
+<button id="scan">Scan</button>
+<div id="status"></div>
+<div id="out"></div>
+<script>/*UI_JS*/</script>

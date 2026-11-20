@@ -25,7 +25,7 @@ export interface MockNode {
   fills?: unknown[]; strokes?: unknown[]; effects?: unknown[];
   fillStyleId?: string; strokeStyleId?: string; effectStyleId?: string; textStyleId?: string;
   description?: string;
-  componentPropertyDefinitions?: Record<string, { type: string; defaultValue: string | boolean; variantOptions?: string[] }>;
+  componentPropertyDefinitions?: Record<string, { type: string; defaultValue: string | boolean; variantOptions?: string[]; preferredValues?: unknown[]; slotSettings?: Record<string, unknown> }>;
   mainComponent?: MockNode;
   [k: string]: unknown;
 }
@@ -133,6 +133,8 @@ export function installMockFigma(file: {
   }
   for (const n of all()) {
     if (n.type === 'COMPONENT') n.getInstancesAsync = async () => all().filter((x) => x.type === 'INSTANCE' && x.mainComponent === n);
+    if (n.type === 'INSTANCE') n.getMainComponentAsync = async () => n.mainComponent ?? null;
+    if (n.type === 'COMPONENT' || n.type === 'COMPONENT_SET') { n.key ??= `key-${n.id}`; n.remote ??= false; }
     if (n.type === 'COMPONENT_SET' || (n.type === 'COMPONENT' && n.parent?.type !== 'COMPONENT_SET')) {
       n.componentPropertyDefinitions ??= {};
       n.description ??= '';

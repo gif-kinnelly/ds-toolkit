@@ -13,7 +13,8 @@ break.
 | [Drift report](#drift-report-github-action) (GitHub Action) | ✅ |
 | [System Inventory](#system-inventory-figma-plugin) (Figma plugin) | ✅ |
 | [Component Docs](#component-docs-figma-plugin) (Figma plugin) | ✅ |
-| Slot rules, agent manifest | planned |
+| [Slot Audit](#slot-audit-figma-plugin) (Figma plugin) | ✅ |
+| Agent manifest | planned |
 
 ## What it reads
 
@@ -208,6 +209,22 @@ so it can't go stale: run it again after a change and the same frames update.
 
 The same docs download as Markdown (this page or every page) for
 `docs/components.md` in the repo.
+
+## Slot Audit (Figma plugin)
+
+Figma's slots carry their own rules (preferred components, min/max children,
+"preferred only") and flag a broken rule on the slot itself. What's missing
+is the view across a file. Slot Audit scans every instance and shows, per
+component slot:
+
+- every **broken limit** (too few, too many, non-preferred content), with
+  **Show** to select those slots;
+- slots with **no rules** at all;
+- **what people actually put in it**: each component's share, and raw layers
+  that aren't components;
+- **Set preferred** from that usage (components used in ≥10% of slots, the
+  threshold is adjustable), optionally "only these", keeping the slot's
+  min/max. Library components are flagged for change in the library file.
 
 ## CLI
 

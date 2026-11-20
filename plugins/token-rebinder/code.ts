@@ -65,7 +65,7 @@ async function run(msg: ScanMsg) {
 async function select(key: string) {
   const g = last?.groups.find((x) => x.key === key);
   if (!g) return;
-  const nodes = (await Promise.all(g.findings.map((f) => figma.getNodeByIdAsync(f.nodeId)))).filter((n): n is SceneNode => !!n && 'visible' in n);
+  const nodes = (await Promise.all(g.findings.map((f) => figma.getNodeByIdAsync(f.nodeId)))).filter((n): n is SceneNode => !!n && n.type !== 'PAGE' && n.type !== 'DOCUMENT');
   // Selection works per page: go to the page with the first layer and select what's there.
   let page: BaseNode | null = nodes[0] ?? null;
   while (page && page.type !== 'PAGE') page = page.parent;

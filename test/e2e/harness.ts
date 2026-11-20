@@ -192,4 +192,36 @@ export function docsFile() {
   (window as unknown as { __pages: unknown }).__pages = [components, screens];
 }
 
-Object.assign(window, { demoFile, brandFile, rebindFile, inventoryFile, docsFile, value, run });
+/** Cards and dialogs with slots; what designers put in them varies. */
+export function slotFile() {
+  const media = node('COMPONENT_SET', 'Media', {}, [node('COMPONENT', 'ratio=16:9'), node('COMPONENT', 'ratio=1:1')]);
+  const textBlock = node('COMPONENT', 'Text block');
+  const promo = node('COMPONENT', 'Promo');
+  const slotDef = (settings: Record<string, unknown>, preferred: unknown[] = []) => ({ type: 'SLOT', defaultValue: '', preferredValues: preferred, slotSettings: settings });
+  const cardMain = node('COMPONENT', 'Card', { componentPropertyDefinitions: { 'Content#2:0': slotDef({ minChildren: 1, maxChildren: 3 }) } });
+  const dialogMain = node('COMPONENT', 'Dialog', { remote: true, componentPropertyDefinitions: { 'Body#4:0': slotDef({ allowPreferredValuesOnly: true }, [{ type: 'COMPONENT', key: 'x' }]) } });
+  const inst = (main: ReturnType<typeof node>) => node('INSTANCE', main.name, { mainComponent: main });
+  const card = (i: number, content: ReturnType<typeof node>[], violations: string[] = []) =>
+    node('INSTANCE', `Card ${i}`, { mainComponent: cardMain }, [node('FRAME', 'Header'), node('SLOT', 'Content', { limitViolations: violations, componentPropertyReferences: {} }, content)]);
+  const cards = [];
+  for (let i = 0; i < 8; i++) cards.push(card(i, [inst(media.children[i % 2]), inst(textBlock)]));
+  cards.push(card(8, [inst(media.children[0]), inst(media.children[1]), inst(textBlock), node('FRAME', 'Custom banner')], ['ABOVE_MAX']));
+  cards.push(card(9, [], ['BELOW_MIN']));
+  cards.push(card(10, [inst(textBlock), inst(promo)]));
+  const dialogs = [0, 1, 2].map((i) => node('INSTANCE', `Dialog ${i}`, { mainComponent: dialogMain }, [node('SLOT', 'Body', { limitViolations: i === 2 ? ['HAS_NON_PREFERRED'] : [], componentPropertyReferences: {} }, i === 2 ? [node('TEXT', 'Note')] : [inst(textBlock)])]));
+  const lib = node('PAGE', 'Components', {}, [media, textBlock, promo, cardMain]);
+  const screens = node('PAGE', 'Screens', {}, [...cards, ...dialogs]);
+  installMockFigma({ name: 'App', collections: [], variables: [], pages: [screens, lib] });
+  // Remote (library) components don't live on a page here.
+  dialogMain.parent = undefined;
+  cardMain.editComponentProperty = (key: string, o: { preferredValues?: unknown[]; slotSettings?: Record<string, unknown> }) => {
+    const d = cardMain.componentPropertyDefinitions![key];
+    if (!d || d.type !== 'SLOT') throw new Error('mock figma: not a slot property');
+    if (o.preferredValues) d.preferredValues = o.preferredValues;
+    if (o.slotSettings) d.slotSettings = o.slotSettings;
+    return key;
+  };
+  (window as unknown as { __card: unknown }).__card = cardMain;
+}
+
+Object.assign(window, { demoFile, brandFile, rebindFile, inventoryFile, docsFile, slotFile, value, run });
