@@ -1,0 +1,36 @@
+// Builds each plugin into dist/<plugin>/ (manifest.json, code.js, ui.html) and the CLI into dist/cli.js.
+import { build } from 'esbuild';
+import { mkdirSync, readFileSync, writeFileSync, existsSync, copyFileSync, readdirSync } from 'node:fs';
+
+const plugins = readdirSync('plugins', { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+// Figma's plugin sandbox runs ES2017-era JS (no optional chaining guarantees in older clients).
+const common = { bundle: true, write: false, target: 'es2017', format: 'iife', logLevel: 'warning' };
+
+const { REPORT_CSS } = await import('../src/core/render.ts').catch(async () => {
+  // Plain node can't import .ts; bundle render.ts on the fly to read the constant.
+  const r = await build({ entryPoints: ['src/core/render.ts'], bundle: true, write: false, format: 'esm', platform: 'node' });
+  return import('data:text/javascript;base64,' + Buffer.from(r.outputFiles[0].text).toString('base64'));
+});
+
+for (const p of plugins) {
+  const dir = `plugins/${p}`;
+  const out = `dist/${p}`;
+  mkdirSync(out, { recursive: true });
+  const code = await build({ ...common, entryPoints: [`${dir}/code.ts`] });
+  writeFileSync(`${out}/code.js`, code.outputFiles[0].text);
+  if (existsSync(`${dir}/ui.ts`)) {
+    const ui = await build({ ...common, target: 'es2020', entryPoints: [`${dir}/ui.ts`] });
+    const html = readFileSync(`${dir}/ui.html`, 'utf8')
+      .replace('/*REPORT_CSS*/', () => REPORT_CSS)
+      // </script> inside the bundle would end the tag early.
+      .replace('/*UI_JS*/', () => ui.outputFiles[0].text.replace(/<\/script/gi, '<\\/script'));
+    writeFileSync(`${out}/ui.html`, html);
+  }
+  copyFileSync(`${dir}/manifest.json`, `${out}/manifest.json`);
+  console.log(`built ${out}`);
+}
+
+if (existsSync('src/cli.ts')) {
+  await build({ ...common, format: 'esm', platform: 'node', target: 'node20', entryPoints: ['src/cli.ts'], outfile: 'dist/cli.js', write: true, banner: { js: '#!/usr/bin/env node' } });
+  console.log('built dist/cli.js');
+}

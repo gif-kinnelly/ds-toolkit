@@ -1,0 +1,58 @@
+<style>
+  * { box-sizing: border-box; }
+  body { font: 12px/1.45 Inter, system-ui, sans-serif; margin: 0; padding: 14px; color: var(--figma-color-text, #1e1e1e); background: var(--figma-color-bg, #fff); }
+  h2 { font-size: 13px; margin: 0 0 2px; }
+  p.lead { margin: 0 0 12px; color: var(--figma-color-text-secondary, #666); }
+  #drop { border: 1.5px dashed var(--figma-color-border-strong, #bbb); border-radius: 8px; padding: 14px; text-align: center; color: var(--figma-color-text-secondary, #666); cursor: pointer; }
+  #drop.over { border-color: var(--figma-color-border-brand-strong, #0d99ff); background: var(--figma-color-bg-brand-tertiary, #e5f4ff); }
+  #files { list-style: none; margin: 8px 0 0; padding: 0; }
+  #files li { display: flex; gap: 6px; align-items: center; padding: 3px 0; }
+  #files .fmt { font: 600 10px ui-monospace, monospace; padding: 2px 5px; border-radius: 4px; background: var(--figma-color-bg-secondary, #f0f0f0); }
+  #files .cm { display: flex; gap: 4px; margin-left: auto; }
+  #files .cm input { width: 84px; padding: 2px 4px; font-size: 11px; }
+  #files .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+  #files .rm { cursor: pointer; color: var(--figma-color-text-tertiary, #999); border: 0; background: none; font-size: 14px; }
+  #loaded { color: var(--figma-color-text-secondary, #666); margin: 6px 0 0; }
+  details.paste summary { cursor: pointer; color: var(--figma-color-text-secondary, #666); margin-top: 8px; }
+  textarea { width: 100%; height: 90px; font: 11px ui-monospace, monospace; margin-top: 6px; padding: 6px; border-radius: 6px; border: 1px solid var(--figma-color-border, #e5e5e5); background: var(--figma-color-bg, #fff); color: var(--figma-color-text, #1e1e1e); }
+  fieldset { border: 0; padding: 0; margin: 12px 0 0; }
+  .opt { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  .opt label { flex: 1; }
+  select, input[type=text] { font: inherit; padding: 4px 6px; border-radius: 5px; border: 1px solid var(--figma-color-border, #e5e5e5); background: var(--figma-color-bg, #fff); color: var(--figma-color-text, #1e1e1e); }
+  .row { display: flex; gap: 8px; margin-top: 12px; }
+  button { font: inherit; font-weight: 600; padding: 7px 12px; border: 0; border-radius: 6px; cursor: pointer; background: var(--figma-color-bg-brand, #0d99ff); color: var(--figma-color-text-onbrand, #fff); }
+  button.secondary { background: var(--figma-color-bg-secondary, #f0f0f0); color: var(--figma-color-text, #1e1e1e); }
+  button:disabled { opacity: .5; cursor: default; }
+  #status { margin: 10px 0; min-height: 16px; color: var(--figma-color-text-secondary, #666); white-space: pre-wrap; }
+  #status.error { color: var(--figma-color-text-danger, #d92d20); }
+  #result { margin-top: 4px; }
+  #actions { display: none; gap: 8px; margin: 10px 0; }
+  footer { margin-top: 18px; padding-top: 10px; border-top: 1px solid var(--figma-color-border, #e5e5e5); color: var(--figma-color-text-secondary, #666); }
+  footer a { color: var(--figma-color-text-brand, #007be5); cursor: pointer; }
+  /*REPORT_CSS*/
+</style>
+<h2>Preview an import</h2>
+<p class="lead">See what importing tokens or a component spec will change in this file, and what it could break, before you run the import.</p>
+
+<div id="drop">Drop JSON files or folders here, or <u>choose files</u><br><small>DTCG tokens · Figma variables export · Figma REST variables · component spec · snapshot</small></div>
+<input id="picker" type="file" accept=".json" multiple hidden />
+<ul id="files"></ul>
+<input id="collection" type="hidden" value="Tokens" />
+<div id="loaded"></div>
+<details class="paste"><summary>…or paste JSON</summary><textarea id="json" placeholder='{"color": {"primary": {"$type": "color", "$value": "#4f46e5"}}}'></textarea></details>
+
+<fieldset>
+    <div class="opt"><label for="missing">Things in Figma but not in the files</label>
+    <select id="missing"><option value="keep">Importer keeps them</option><option value="remove">Importer deletes them</option></select></div>
+  <div class="opt"><label for="scope">Count usage on</label>
+    <select id="scope"><option value="file">Every page (slower)</option><option value="page">This page only</option></select></div>
+  <div class="opt"><label><input id="whole" type="checkbox" /> Also list collections, styles and components the files don't mention</label></div>
+</fieldset>
+
+<div class="row"><button id="go" disabled>Preview changes</button></div>
+<div id="status"></div>
+<div id="actions"><button id="md" class="secondary">Copy as Markdown</button><button id="html" class="secondary">Download report</button></div>
+<div id="result"></div>
+
+<footer>For CI: <a id="export">export this file as a snapshot</a> (variables, styles, components and usage), commit it, and diff against it in a GitHub Action.</footer>
+<script>/*UI_JS*/</script>
