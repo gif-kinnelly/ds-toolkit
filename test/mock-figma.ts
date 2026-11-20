@@ -31,7 +31,13 @@ export interface MockNode {
 }
 
 export function node(type: string, name: string, extra: Partial<MockNode> = {}, children: MockNode[] = []): MockNode {
-  const n: MockNode = { id: nid(type), type, name, children: [], ...extra };
+  const n: MockNode = { id: nid(type), type, name, children: [], removed: false, resolvedVariableModes: {}, ...extra };
+  n.setBoundVariable = (field: string, v: { id: string } | null) => {
+    if (typeof n[field] !== 'number') throw new Error(`mock figma: can't bind ${field} on ${n.type}`);
+    const b = { ...(n.boundVariables ?? {}) };
+    if (v) b[field] = alias(v.id); else delete b[field];
+    n.boundVariables = b;
+  };
   for (const c of children) { c.parent = n; n.children.push(c); }
   return n;
 }
@@ -44,7 +50,7 @@ function walk(n: MockNode, out: MockNode[] = []) {
 export function installMockFigma(file: {
   name?: string;
   collections: { name: string; modes: string[]; parent?: string }[];
-  variables: { name: string; collection: string; type: string; values: Record<string, unknown>; hidden?: boolean }[];
+  variables: { name: string; collection: string; type: string; values: Record<string, unknown>; hidden?: boolean; scopes?: string[] }[];
   textStyles?: { name: string; family: string; style: string; size: number; lineHeight: { unit: string; value?: number }; bound?: Record<string, Alias> }[];
   effectStyles?: { name: string; effects: unknown[] }[];
   paintStyles?: { name: string; paints: unknown[] }[];
@@ -68,7 +74,7 @@ export function installMockFigma(file: {
       const raw = v.values[m.name];
       valuesByMode[m.modeId] = typeof raw === 'string' && raw.startsWith('@') ? alias(varIds.get(raw.slice(1))!) : raw;
     }
-    return { id, name: v.name, resolvedType: v.type, variableCollectionId: c.id, valuesByMode, hiddenFromPublishing: !!v.hidden, description: '',
+    return { id, name: v.name, resolvedType: v.type, variableCollectionId: c.id, valuesByMode, hiddenFromPublishing: !!v.hidden, description: '', scopes: v.scopes ?? ['ALL_SCOPES'],
       ...pluginData(),
       setValueForMode(modeId: string, value: unknown) {
         if (!c.modes.some((m) => m.modeId === modeId)) throw new Error(`mock figma: no mode ${modeId} in ${c.name}`);
@@ -111,6 +117,9 @@ export function installMockFigma(file: {
   });
 
   const mixed = Symbol('mixed');
+  let selection: MockNode[] = [];
+  for (const p of pages) Object.defineProperty(p, 'selection', { get: () => selection, set: (v: MockNode[]) => { selection = v; } });
+  const undo = { commits: 0 };
   (globalThis as Record<string, unknown>).figma = strict('figma', {
     mixed,
     root: { name: file.name ?? 'Mock file', children: pages },
@@ -119,12 +128,20 @@ export function installMockFigma(file: {
     getLocalTextStylesAsync: async () => textStyles,
     getLocalEffectStylesAsync: async () => effectStyles,
     getLocalPaintStylesAsync: async () => paintStyles,
+    getNodeByIdAsync: async (id: string) => all().find((n) => n.id === id) ?? null,
+    setCurrentPageAsync: async (p: MockNode) => { (globalThis as unknown as { figma: { currentPage: MockNode } }).figma.currentPage = p; },
+    commitUndo: () => { undo.commits++; },
+    viewport: { scrollAndZoomIntoView: () => {} },
     variables: strict('figma.variables', {
       getLocalVariableCollectionsAsync: async () => collections,
       getLocalVariablesAsync: async () => variables,
       getVariableCollectionByIdAsync: async (id: string) => collections.find((c) => c.id === id) ?? null,
       getVariableByIdAsync: async (id: string) => variables.find((v) => v.id === id) ?? null,
+      setBoundVariableForPaint: (paint: Record<string, unknown>, field: string, v: { id: string }) => {
+        if (field !== 'color' || paint.type !== 'SOLID') throw new Error('mock figma: setBoundVariableForPaint supports SOLID color only');
+        return { ...paint, boundVariables: { color: alias(v.id) } };
+      },
     }),
   });
-  return { varIds, collections, variables, textStyles, effectStyles, paintStyles };
+  return { varIds, collections, variables, textStyles, effectStyles, paintStyles, undo };
 }

@@ -83,3 +83,5 @@ $('sync').onclick = () => {
   send({ type: 'sync', collectionId: colId(), keep, reset });
 };
 send({ type: 'init' });
+
+export {};

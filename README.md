@@ -9,7 +9,7 @@ break.
 |---|---|
 | [Import Preview](#import-preview-figma-plugin) (Figma plugin + CLI) | ✅ |
 | [Brand Inheritance](#brand-inheritance-figma-plugin) (Figma plugin) | ✅ |
-| Hardcoded value → token rebinder | planned |
+| [Token Rebinder](#token-rebinder-figma-plugin) (Figma plugin) | ✅ |
 | Drift report GitHub Action | planned |
 | System inventory, docs from spec, slot rules, agent manifest | planned |
 
@@ -88,6 +88,34 @@ This plugin adds inheritance on top of ordinary modes:
 The setup is stored on the collection and variables as shared plugin data,
 so everyone editing the file sees the same parents and overrides. Aliases
 inherit as aliases.
+
+## Token Rebinder (Figma plugin)
+
+Moving a product onto tokens usually means finding thousands of hardcoded
+colors and sizes and binding each one by hand. The rebinder scans a
+selection, a page or the whole file and groups raw values into rows like
+*"#ffffff · fill · 31 layers → color/surface"*, which you approve and bind in
+one go.
+
+- **Scopes decide the token.** The same hex on a frame, a text layer and a
+  stroke gets `color/surface`, `color/on-primary` and `color/border`, because
+  each variable's Figma scopes say where it may be used.
+- **Semantic over primitive.** Aliased tokens rank above the palette values
+  they point to; variables hidden from publishing aren't suggested unless you
+  ask for them.
+- **Modes are respected.** A layer in dark mode is compared with each token's
+  dark value. A light color painted on a dark-mode frame matches nothing, which
+  is usually a bug worth seeing.
+- **Near matches are opt-in.** Colors within a barely visible distance (OKLab
+  ΔE ≤ 2) are offered but not ticked; numbers match exactly unless you allow
+  ±1 or ±2px.
+- A paint at 50% black matches a token like `color/scrim` (#00000080), and the
+  paint's opacity becomes 100% so nothing changes visually.
+- Gap and padding share spacing rows. Layers inside instances are skipped by
+  default (binding there creates overrides). Values using a style are left alone.
+- **Show** selects the layers in a row. One **Bind** is one undo step, and
+  layers that changed since the scan are skipped, not overwritten.
+- Library variables can be suggested too (More options).
 
 ## CLI
 

@@ -1,0 +1,51 @@
+<style>
+  * { box-sizing: border-box; }
+  body { font: 12px/1.45 Inter, system-ui, sans-serif; margin: 0; padding: 14px; color: var(--figma-color-text, #1e1e1e); background: var(--figma-color-bg, #fff); }
+  h2 { font-size: 13px; margin: 0 0 2px; }
+  p.lead { margin: 0 0 12px; color: var(--figma-color-text-secondary, #666); }
+  .opt { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  .opt > label:first-child { flex: 1; }
+  select { font: inherit; padding: 4px 6px; border-radius: 5px; border: 1px solid var(--figma-color-border, #e5e5e5); background: var(--figma-color-bg, #fff); color: var(--figma-color-text, #1e1e1e); max-width: 100%; }
+  details.more summary { cursor: pointer; color: var(--figma-color-text-secondary, #666); margin: 6px 0; }
+  #libs label { display: block; margin: 3px 0; }
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  button { white-space: nowrap; font: inherit; font-weight: 600; padding: 7px 12px; border: 0; border-radius: 6px; cursor: pointer; background: var(--figma-color-bg-brand, #0d99ff); color: var(--figma-color-text-onbrand, #fff); }
+  button.secondary { background: var(--figma-color-bg-secondary, #f0f0f0); color: var(--figma-color-text, #1e1e1e); }
+  button:disabled { opacity: .5; cursor: default; }
+  #status { margin: 10px 0; min-height: 16px; color: var(--figma-color-text-secondary, #666); white-space: pre-wrap; }
+  #status.error { color: var(--figma-color-text-danger, #d92d20); }
+  .sum { font-weight: 600; margin: 4px 0 8px; }
+  .groups { border: 1px solid var(--figma-color-border, #e5e5e5); border-radius: 8px; }
+  .g { display: grid; grid-template-columns: 18px 1fr; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--figma-color-border, #eee); }
+  .g:last-child { border-bottom: 0; }
+  .g .top { display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; }
+  .g .val { font: 600 11px ui-monospace, monospace; }
+  .g .fam { font-size: 10px; text-transform: uppercase; letter-spacing: .03em; padding: 2px 5px; border-radius: 4px; background: var(--figma-color-bg-secondary, #f0f0f0); }
+  .g .n { margin-left: auto; color: var(--figma-color-text-secondary, #666); }
+  .g .n a { color: var(--figma-color-text-brand, #007be5); cursor: pointer; margin-left: 6px; }
+  .g .lay { color: var(--figma-color-text-tertiary, #999); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .g select { width: 100%; margin-top: 4px; }
+  .near { color: var(--figma-color-text-warning, #8a5a00); font-size: 11px; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); background-image: linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%),linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%); background-size: 6px 6px; background-position: 0 0, 3px 3px; position: relative; overflow: hidden; }
+  .sw i { position: absolute; inset: 0; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
+  details.none { margin-top: 10px; }
+  details.none summary { cursor: pointer; color: var(--figma-color-text-secondary, #666); }
+  details.none ul { margin: 6px 0; padding-left: 18px; color: var(--figma-color-text-secondary, #666); }
+  #applyBar { position: sticky; bottom: 0; background: var(--figma-color-bg, #fff); padding: 10px 0 4px; display: none; }
+</style>
+<h2>Bind raw values to tokens</h2>
+<p class="lead">Finds hardcoded colors, radii, spacing and font sizes, suggests the variable that fits (respecting each variable's scopes and the layer's mode), and binds the ones you approve.</p>
+
+<div class="opt"><label for="scope">Scan</label><select id="scope"><option value="selection">Selection</option><option value="page" selected>This page</option><option value="file">Every page</option></select></div>
+<div class="opt"><label for="near">Colors</label><select id="near"><option value="0">Exact matches only</option><option value="2" selected>Also near (barely visible, ΔE ≤ 2)</option><option value="5">Also close (ΔE ≤ 5)</option></select></div>
+<div class="opt"><label for="nums">Numbers</label><select id="nums"><option value="0" selected>Exact matches only</option><option value="1">Within 1px</option><option value="2">Within 2px</option></select></div>
+<details class="more"><summary>More options</summary>
+  <div class="opt"><label><input id="hidden" type="checkbox" /> Suggest variables hidden from publishing (primitives)</label></div>
+  <div class="opt"><label><input id="inst" type="checkbox" checked /> Skip layers inside instances</label></div>
+  <div id="libs"></div>
+</details>
+<div class="row"><button id="scan">Scan</button></div>
+<div id="status"></div>
+<div id="result"></div>
+<div id="applyBar"><button id="apply">Bind</button></div>
+<script>/*UI_JS*/</script>
