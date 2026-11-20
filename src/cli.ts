@@ -10,8 +10,12 @@ import { join, relative } from 'node:path';
 import { load, type InputFile } from './adapters/load';
 import { diff, type Severity } from './core/diff';
 import { renderHtmlPage, renderMarkdown, renderText } from './core/render';
+import { buildManifest } from './agent/manifest';
 
-const HELP = `Usage: ds-toolkit diff <source…> --against <target…> [options]
+const HELP = `Usage:
+  ds-toolkit diff <source…> --against <target…> [options]
+  ds-toolkit agent <files…> [--out design-system.md] [--json design-system.json] [--title <name>]
+      Writes design system context for coding agents (CLAUDE.md / AGENTS.md).
 
 Paths can be files or folders (folders are read recursively for *.json).
 
@@ -45,7 +49,8 @@ function expand(paths: string[]): InputFile[] {
 
 function main(argv: string[]): number {
   const [cmd, ...rest] = argv;
-  if (cmd !== 'diff' || rest.includes('--help') || rest.includes('-h')) { process.stdout.write(HELP); return cmd === 'diff' || !cmd ? 0 : 2; }
+  if (cmd === 'agent' && !rest.includes('--help')) return agent(rest);
+  if (cmd !== 'diff' || rest.includes('--help') || rest.includes('-h')) { process.stdout.write(HELP); return cmd === 'diff' || cmd === 'agent' || !cmd ? 0 : 2; }
   const src: string[] = [], tgt: string[] = [];
   const opt: Record<string, string | boolean> = {};
   let into = src;
@@ -70,6 +75,21 @@ function main(argv: string[]): number {
   const failOn = opt['fail-on'] as Severity | undefined;
   if (failOn === 'breaking' && r.counts.breaking) return 1;
   if (failOn === 'review' && (r.counts.breaking || r.counts.review)) return 1;
+  return 0;
+}
+
+function agent(args: string[]): number {
+  const files: string[] = [];
+  const opt: Record<string, string> = {};
+  for (let i = 0; i < args.length; i++) {
+    if (args[i].startsWith('--')) opt[args[i].slice(2)] = args[++i];
+    else files.push(args[i]);
+  }
+  if (!files.length) { process.stderr.write('Need token or spec files.\n\n' + HELP); return 2; }
+  const snap = load(expand(files), { collection: opt.collection });
+  const { markdown, json } = buildManifest(snap, [], { title: opt.title });
+  if (opt.out) writeFileSync(opt.out, markdown + '\n'); else process.stdout.write(markdown + '\n');
+  if (opt.json) writeFileSync(opt.json, JSON.stringify(json, null, 2) + '\n');
   return 0;
 }
 

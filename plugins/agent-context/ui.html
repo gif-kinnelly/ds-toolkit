@@ -1,0 +1,22 @@
+<style>
+  * { box-sizing: border-box; }
+  body { font: 12px/1.45 Inter, system-ui, sans-serif; margin: 0; padding: 14px; color: var(--figma-color-text, #1e1e1e); background: var(--figma-color-bg, #fff); }
+  h2 { font-size: 13px; margin: 0 0 2px; }
+  p { margin: 0 0 10px; color: var(--figma-color-text-secondary, #666); }
+  code { font: 11px ui-monospace, monospace; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  button { white-space: nowrap; font: inherit; font-weight: 600; padding: 7px 12px; border: 0; border-radius: 6px; cursor: pointer; background: var(--figma-color-bg-brand, #0d99ff); color: var(--figma-color-text-onbrand, #fff); }
+  button.secondary { background: var(--figma-color-bg-secondary, #f0f0f0); color: var(--figma-color-text, #1e1e1e); }
+  #status { min-height: 16px; color: var(--figma-color-text-secondary, #666); }
+  #status.error { color: var(--figma-color-text-danger, #d92d20); }
+  pre { white-space: pre-wrap; font: 11px/1.5 ui-monospace, monospace; background: var(--figma-color-bg-secondary, #f5f5f5); border-radius: 6px; padding: 10px; max-height: 420px; overflow: auto; margin: 0; }
+</style>
+<h2>Design system context for coding agents</h2>
+<p>Writes <code>design-system.md</code> (rules, tokens, components) to include from <code>CLAUDE.md</code> or <code>AGENTS.md</code>, and <code>design-system.json</code> for tools, so generated UI uses this file's tokens and components.</p>
+<button id="build">Generate</button>
+<div id="status"></div>
+<div id="out" hidden>
+  <div class="row"><button id="md" class="secondary">Download .md</button><button id="json" class="secondary">Download .json</button><button id="copy" class="secondary">Copy .md</button></div>
+  <pre id="preview"></pre>
+</div>
+<script>/*UI_JS*/</script>

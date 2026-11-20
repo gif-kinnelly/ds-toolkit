@@ -204,6 +204,8 @@ export function fromDtcg(files: DtcgFile[], opts: DtcgOptions = {}): Snapshot {
         if (raw.description) v.description = raw.description;
         const hidden = figmaExt(raw.ext, 'hiddenFromPublishing');
         if (hidden === true) v.hidden = true;
+        const scopes = figmaExt(raw.ext, 'scopes');
+        if (Array.isArray(scopes) && !(scopes.length === 1 && scopes[0] === 'ALL_SCOPES')) v.scopes = scopes.map(String);
         byName.set(raw.name, v);
         c.variables.push(v);
       }

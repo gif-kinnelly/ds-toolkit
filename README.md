@@ -14,7 +14,7 @@ break.
 | [System Inventory](#system-inventory-figma-plugin) (Figma plugin) | ✅ |
 | [Component Docs](#component-docs-figma-plugin) (Figma plugin) | ✅ |
 | [Slot Audit](#slot-audit-figma-plugin) (Figma plugin) | ✅ |
-| Agent manifest | planned |
+| [Agent Context](#agent-context-figma-plugin--cli) (Figma plugin + CLI) | ✅ |
 
 ## What it reads
 
@@ -226,9 +226,33 @@ component slot:
   threshold is adjustable), optionally "only these", keeping the slot's
   min/max. Library components are flagged for change in the library file.
 
+## Agent Context (Figma plugin + CLI)
+
+Writes the design system as context for coding agents: `design-system.md`
+to include from `CLAUDE.md` or `AGENTS.md`, and `design-system.json` for
+tools. Generated UI then uses your tokens and components instead of
+plausible-looking hex values.
+
+- **Rules derived from the data**, not boilerplate: which collections are
+  semantic and which are lower tiers not to use directly (a collection whose
+  tokens are mostly alias targets, like a Brand tier between palette and
+  Theme, counts as a lower tier); which modes exist and that tokens, not
+  per-mode values, must be referenced; text styles over loose font settings.
+- **Tokens** with a "use for" column from Figma scopes, or inferred from
+  names when there are none (`*-bg` → backgrounds, `text` → text color), and
+  values per mode, resolved through aliases. Lower tiers are summarized.
+- **Components** with variants, properties and the tokens they use.
+
+From the repo, in CI:
+
+```sh
+npx ds-toolkit agent tokens/ figma-plugin/spec.json --title "Acme" --out design-system.md --json design-system.json
+```
+
 ## CLI
 
 ```sh
+npx ds-toolkit agent tokens/ --out design-system.md
 npx ds-toolkit diff tokens/ --against figma-snapshot.json
 npx ds-toolkit diff new-spec.json --against old-spec.json --format md --fail-on breaking
 ```

@@ -163,6 +163,7 @@ export async function readFigmaFile(opts: ReadOptions = {}): Promise<Snapshot> {
           name: v.name, type: v.resolvedType, values,
           ...(v.hiddenFromPublishing ? { hidden: true } : {}),
           ...(v.description ? { description: v.description } : {}),
+          ...(v.scopes && !(v.scopes.length === 1 && v.scopes[0] === 'ALL_SCOPES') ? { scopes: [...v.scopes] } : {}),
           ...(opts.skipUsage ? {} : { usage: usage.get(v.id) ?? 0 }),
         };
       }),

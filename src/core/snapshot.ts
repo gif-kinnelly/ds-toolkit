@@ -26,6 +26,8 @@ export interface Variable {
   values: Record<string, Value>;
   hidden?: boolean;
   description?: string;
+  /** Figma scopes (where the variable may be used); absent means all. */
+  scopes?: string[];
   /** Live files only: how many layers or styles bind this variable. */
   usage?: number;
 }
