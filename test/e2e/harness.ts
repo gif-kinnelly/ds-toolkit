@@ -127,4 +127,27 @@ export function rebindFile() {
   (window as unknown as { __page: unknown }).__page = page;
 }
 
-Object.assign(window, { demoFile, brandFile, rebindFile, value, run });
+/** Screens built without a system: near-duplicate colors, off-grid spacing, ad-hoc type. */
+export function inventoryFile() {
+  const rgb = (hex: string) => ({ r: parseInt(hex.slice(1, 3), 16) / 255, g: parseInt(hex.slice(3, 5), 16) / 255, b: parseInt(hex.slice(5, 7), 16) / 255 });
+  const solid = (hex: string) => ({ type: 'SOLID', visible: true, opacity: 1, color: rgb(hex) });
+  const text = (name: string, hex: string, size: number, style: string, lh: number) => node('TEXT', name, { fills: [solid(hex)], textStyleId: '', fontSize: size, fontName: { family: 'Inter', style }, lineHeight: { unit: 'PIXELS', value: lh } });
+  // Ten cards, drawn by different people over time.
+  const brand = ['#4f46e5', '#4f46e5', '#4f46e5', '#4f47e6', '#4f46e5', '#5046e4', '#4f46e5', '#4f46e5', '#4f46e5', '#4f46e5'];
+  const gaps = [16, 16, 16, 15, 16, 16, 16, 16, 22, 16];
+  const radii = [8, 8, 8, 8, 7, 8, 8, 8, 8, 8];
+  const cards = brand.map((b, i) => node('FRAME', `Card ${i}`, {
+    fills: [solid(i === 6 ? '#fefefe' : '#ffffff')], strokes: [solid('#e4e4e7')], strokeWeight: 1,
+    topLeftRadius: radii[i], topRightRadius: radii[i], bottomLeftRadius: radii[i], bottomRightRadius: radii[i],
+    layoutMode: 'VERTICAL', primaryAxisAlignItems: 'MIN', itemSpacing: 12, paddingLeft: gaps[i], paddingRight: gaps[i], paddingTop: gaps[i], paddingBottom: gaps[i],
+  }, [
+    text('Title', '#18181b', 18, 'Semi Bold', 28), text('Body', '#71717a', 14, 'Regular', 20),
+    node('FRAME', 'Button', { fills: [solid(b)], topLeftRadius: 9999, topRightRadius: 9999, bottomLeftRadius: 9999, bottomRightRadius: 9999, layoutMode: 'HORIZONTAL', primaryAxisAlignItems: 'CENTER', itemSpacing: 8, paddingLeft: 16, paddingRight: 16, paddingTop: 8, paddingBottom: 8 }, [text('Label', '#ffffff', 14, 'Medium', 20)]),
+    node('FRAME', 'Badge', { fills: [solid(i % 3 ? '#dcfce7' : '#fee2e2')], topLeftRadius: 4, topRightRadius: 4, bottomLeftRadius: 4, bottomRightRadius: 4, layoutMode: 'HORIZONTAL', itemSpacing: 4, paddingLeft: 8, paddingRight: 8, paddingTop: 2, paddingBottom: 2 }, [text('Badge', i % 3 ? '#15803d' : '#b91c1c', 12, 'Medium', 16)]),
+  ]));
+  const page = node('PAGE', 'Screens', {}, [node('FRAME', 'Header', { fills: [solid('#18181b')] }, [text('Logo', '#ffffff', 24, 'Bold', 32)]), ...cards]);
+  const m = installMockFigma({ name: 'Legacy app', collections: [], variables: [], pages: [page] });
+  (window as unknown as { __mock: unknown }).__mock = m;
+}
+
+Object.assign(window, { demoFile, brandFile, rebindFile, inventoryFile, value, run });

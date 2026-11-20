@@ -1,0 +1,41 @@
+<style>
+  * { box-sizing: border-box; }
+  body { font: 12px/1.45 Inter, system-ui, sans-serif; margin: 0; padding: 14px; color: var(--figma-color-text, #1e1e1e); background: var(--figma-color-bg, #fff); }
+  h2 { font-size: 13px; margin: 0 0 2px; }
+  h3 { font-size: 12px; margin: 16px 0 6px; display: flex; justify-content: space-between; align-items: baseline; }
+  h3 small { font-weight: 400; color: var(--figma-color-text-secondary, #666); }
+  p.lead { margin: 0 0 12px; color: var(--figma-color-text-secondary, #666); }
+  .opt { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  .opt > label:first-child { flex: 1; }
+  select, input[type=text] { font: inherit; padding: 4px 6px; border-radius: 5px; border: 1px solid var(--figma-color-border, #e5e5e5); background: var(--figma-color-bg, #fff); color: var(--figma-color-text, #1e1e1e); }
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+  button { white-space: nowrap; font: inherit; font-weight: 600; padding: 7px 12px; border: 0; border-radius: 6px; cursor: pointer; background: var(--figma-color-bg-brand, #0d99ff); color: var(--figma-color-text-onbrand, #fff); }
+  button.secondary { background: var(--figma-color-bg-secondary, #f0f0f0); color: var(--figma-color-text, #1e1e1e); }
+  #status { margin: 10px 0; min-height: 16px; color: var(--figma-color-text-secondary, #666); white-space: pre-wrap; }
+  #status.error { color: var(--figma-color-text-danger, #d92d20); }
+  .sum { font-weight: 600; margin: 6px 0; }
+  .fam { display: grid; grid-template-columns: 70px 1fr; gap: 6px; align-items: start; margin: 4px 0; }
+  .fam > span { color: var(--figma-color-text-secondary, #666); padding-top: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-flex; gap: 6px; align-items: center; border: 1px solid var(--figma-color-border, #e5e5e5); border-radius: 6px; padding: 3px 6px; font-size: 11px; }
+  .chip b { font-weight: 600; }
+  .chip .c { color: var(--figma-color-text-secondary, #666); font-variant-numeric: tabular-nums; }
+  .chip.off { border-style: dashed; color: var(--figma-color-text-warning, #8a5a00); }
+  .sw { width: 22px; height: 22px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); flex: none; }
+  .m { font-size: 10px; color: var(--figma-color-text-tertiary, #999); }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { text-align: left; font-weight: 500; color: var(--figma-color-text-secondary, #666); border-bottom: 1px solid var(--figma-color-border, #e5e5e5); padding: 3px 6px 3px 0; }
+  td { border-bottom: 1px solid var(--figma-color-border, #eee); padding: 4px 6px 4px 0; }
+  td.num { font-variant-numeric: tabular-nums; color: var(--figma-color-text-secondary, #666); }
+  .next { background: var(--figma-color-bg-secondary, #f5f5f5); border-radius: 6px; padding: 8px 10px; margin-top: 10px; color: var(--figma-color-text-secondary, #555); }
+</style>
+<h2>System inventory</h2>
+<p class="lead">Counts the colors, spacing, radii and type that screens actually use, merges near-duplicates, and proposes a token set you can download or create as variables.</p>
+<div class="opt"><label for="scope">Scan</label><select id="scope"><option value="selection">Selection</option><option value="page" selected>This page</option><option value="file">Every page</option></select></div>
+<div class="opt"><label for="merge">Merge colors that look the same</label><select id="merge"><option value="1">Only identical-looking (ΔE ≤ 1)</option><option value="2" selected>Barely different (ΔE ≤ 2)</option><option value="5">Close (ΔE ≤ 5)</option></select></div>
+<div class="opt"><label for="grid">Spacing grid</label><select id="grid"><option value="4" selected>4px</option><option value="8">8px</option></select></div>
+<div class="opt"><label><input id="tok" type="checkbox" /> Include values already using variables or styles</label></div>
+<div class="row"><button id="scan">Scan</button></div>
+<div id="status"></div>
+<div id="out"></div>
+<script>/*UI_JS*/</script>

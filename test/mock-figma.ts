@@ -32,6 +32,10 @@ export interface MockNode {
 
 export function node(type: string, name: string, extra: Partial<MockNode> = {}, children: MockNode[] = []): MockNode {
   const n: MockNode = { id: nid(type), type, name, children: [], removed: false, resolvedVariableModes: {}, ...extra };
+  if (type === 'TEXT') {
+    // Runs: one per node unless the test sets n.runs.
+    n.getStyledTextSegments = () => (n.runs as unknown[] | undefined) ?? [{ fontSize: n.fontSize ?? 14, fontName: n.fontName ?? { family: 'Inter', style: 'Regular' }, lineHeight: n.lineHeight ?? { unit: 'AUTO' } }];
+  }
   n.setBoundVariable = (field: string, v: { id: string } | null) => {
     if (typeof n[field] !== 'number') throw new Error(`mock figma: can't bind ${field} on ${n.type}`);
     const b = { ...(n.boundVariables ?? {}) };
@@ -60,28 +64,32 @@ export function installMockFigma(file: {
 }) {
   const collections = file.collections.map((c) => {
     const modes = c.modes.map((m) => ({ modeId: nid('mode'), name: m }));
-    return { id: nid('coll'), name: c.name, modes, defaultModeId: modes[0].modeId, variableIds: [] as string[], parentName: c.parent };
+    return { id: nid('coll'), name: c.name, modes, defaultModeId: modes[0].modeId, variableIds: [] as string[], parentName: c.parent as string | undefined };
   });
   for (const c of collections) if (c.parentName) (c as Record<string, unknown>).parentVariableCollectionId = collections.find((x) => x.name === c.parentName)!.id;
   const varIds = new Map<string, string>();
   for (const v of file.variables) varIds.set(v.name, nid('var'));
-  const variables = file.variables.map((v) => {
-    const c = collections.find((x) => x.name === v.collection)!;
-    const id = varIds.get(v.name)!;
+  type Coll = (typeof collections)[number];
+  const makeVar = (id: string, v: { name: string; type: string; hidden?: boolean; scopes?: string[] }, c: Coll, valuesByMode: Record<string, unknown>) => {
     c.variableIds.push(id);
-    const valuesByMode: Record<string, unknown> = {};
-    for (const m of c.modes) {
-      const raw = v.values[m.name];
-      valuesByMode[m.modeId] = typeof raw === 'string' && raw.startsWith('@') ? alias(varIds.get(raw.slice(1))!) : raw;
-    }
     return { id, name: v.name, resolvedType: v.type, variableCollectionId: c.id, valuesByMode, hiddenFromPublishing: !!v.hidden, description: '', scopes: v.scopes ?? ['ALL_SCOPES'],
       ...pluginData(),
       setValueForMode(modeId: string, value: unknown) {
         if (!c.modes.some((m) => m.modeId === modeId)) throw new Error(`mock figma: no mode ${modeId} in ${c.name}`);
         valuesByMode[modeId] = value;
       } };
+  };
+  const variables = file.variables.map((v) => {
+    const c = collections.find((x) => x.name === v.collection)!;
+    const valuesByMode: Record<string, unknown> = {};
+    for (const m of c.modes) {
+      const raw = v.values[m.name];
+      valuesByMode[m.modeId] = typeof raw === 'string' && raw.startsWith('@') ? alias(varIds.get(raw.slice(1))!) : raw;
+    }
+    return makeVar(varIds.get(v.name)!, v, c, valuesByMode);
   });
-  for (const c of collections) Object.assign(c, pluginData(), {
+  const collectionMethods = (c: Coll) => Object.assign(c, pluginData(), {
+    renameMode(modeId: string, name: string) { c.modes.find((m) => m.modeId === modeId)!.name = name; },
     addMode(name: string) {
       if (c.modes.length >= (file.modeLimit ?? 20)) throw new Error('Limited to ' + (file.modeLimit ?? 20) + ' modes only');
       const modeId = nid('mode');
@@ -91,7 +99,14 @@ export function installMockFigma(file: {
       return modeId;
     },
   });
-  const textStyles = (file.textStyles ?? []).map((s) => ({ id: nid('S'), name: s.name, fontName: { family: s.family, style: s.style }, fontSize: s.size, lineHeight: s.lineHeight, boundVariables: s.bound ?? {} }));
+  for (const c of collections) collectionMethods(c);
+  const textStyle = (s: { name: string; family: string; style: string; size: number; lineHeight: { unit: string; value?: number }; bound?: Record<string, Alias> }) => {
+    const st: Record<string, unknown> = { id: nid('S'), name: s.name, fontName: { family: s.family, style: s.style }, fontSize: s.size, lineHeight: s.lineHeight, boundVariables: { ...(s.bound ?? {}) } };
+    st.setBoundVariable = (field: string, v: { id: string }) => { (st.boundVariables as Record<string, Alias>)[field] = alias(v.id); };
+    return st;
+  };
+  const textStyles = (file.textStyles ?? []).map(textStyle);
+  const fonts = new Set(['Inter|Regular', 'Inter|Medium', 'Inter|Semi Bold', 'Inter|Bold']);
   const effectStyles = (file.effectStyles ?? []).map((s) => ({ id: nid('S'), name: s.name, effects: s.effects }));
   const paintStyles = (file.paintStyles ?? []).map((s) => ({ id: nid('S'), name: s.name, paints: s.paints }));
 
@@ -131,10 +146,24 @@ export function installMockFigma(file: {
     getNodeByIdAsync: async (id: string) => all().find((n) => n.id === id) ?? null,
     setCurrentPageAsync: async (p: MockNode) => { (globalThis as unknown as { figma: { currentPage: MockNode } }).figma.currentPage = p; },
     commitUndo: () => { undo.commits++; },
+    loadFontAsync: async (f: { family: string; style: string }) => { if (!fonts.has(`${f.family}|${f.style}`)) throw new Error(`mock figma: font ${f.family} ${f.style} not installed`); },
+    createTextStyle: () => { const st = textStyle({ name: 'Text style', family: 'Inter', style: 'Regular', size: 12, lineHeight: { unit: 'AUTO' } }); textStyles.push(st); return st; },
     viewport: { scrollAndZoomIntoView: () => {} },
     variables: strict('figma.variables', {
       getLocalVariableCollectionsAsync: async () => collections,
       getLocalVariablesAsync: async () => variables,
+      createVariableCollection: (name: string) => {
+        const modes = [{ modeId: nid('mode'), name: 'Mode 1' }];
+        const c = collectionMethods({ id: nid('coll'), name, modes, defaultModeId: modes[0].modeId, variableIds: [] as string[], parentName: undefined as string | undefined });
+        collections.push(c);
+        return c;
+      },
+      createVariable: (name: string, c: Coll, type: string) => {
+        if (variables.some((v) => v.name === name && v.variableCollectionId === c.id)) throw new Error(`mock figma: duplicate variable ${name}`);
+        const v = makeVar(nid('var'), { name, type }, c, {});
+        variables.push(v);
+        return v;
+      },
       getVariableCollectionByIdAsync: async (id: string) => collections.find((c) => c.id === id) ?? null,
       getVariableByIdAsync: async (id: string) => variables.find((v) => v.id === id) ?? null,
       setBoundVariableForPaint: (paint: Record<string, unknown>, field: string, v: { id: string }) => {

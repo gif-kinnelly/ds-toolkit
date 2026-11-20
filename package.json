@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test test/*.test.ts",
     "check": "npm run typecheck && npm test && npm run build",
-    "e2e": "npm run build && node test/e2e/import-preview.e2e.mjs && node test/e2e/brand-inheritance.e2e.mjs && node test/e2e/token-rebinder.e2e.mjs"
+    "e2e": "npm run build && for t in test/e2e/*.e2e.mjs; do node $t || exit 1; done"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.143.0",

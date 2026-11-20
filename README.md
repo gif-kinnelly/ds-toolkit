@@ -11,7 +11,8 @@ break.
 | [Brand Inheritance](#brand-inheritance-figma-plugin) (Figma plugin) | ✅ |
 | [Token Rebinder](#token-rebinder-figma-plugin) (Figma plugin) | ✅ |
 | [Drift report](#drift-report-github-action) (GitHub Action) | ✅ |
-| System inventory, docs from spec, slot rules, agent manifest | planned |
+| [System Inventory](#system-inventory-figma-plugin) (Figma plugin) | ✅ |
+| Docs from spec, slot rules, agent manifest | planned |
 
 ## What it reads
 
@@ -164,6 +165,31 @@ can't comment still get the job summary.
 
 This repo's own CI runs the Action on `examples/`, so every run shows a sample
 report.
+
+## System Inventory (Figma plugin)
+
+For products built before there was a system: scans screens and proposes the
+token set they already imply.
+
+- **Colors** that look the same (OKLab ΔE ≤ 2 by default) merge into the most
+  used one, and are named by hue family and a 50–950 step from their lightness
+  (`palette/indigo/700`, `palette/gray/200`). Pale tints join the family of a
+  nearby strong color, so a badge's `#dcfce7` background sits with its
+  `#15803d` text under *green*. Names are suggestions; rename freely.
+- **Spacing** snaps to a 4px (or 8px) grid with Tailwind-style names
+  (`space/4` = 16px, `space/0.5` = 2px). Values off the grid are listed, not
+  tokenized: they're usually mistakes worth fixing in the designs.
+- **Radii** and **font sizes** are named around the most used value (`md`),
+  and `radius/full` for pills.
+- **Text styles** come from the font/weight/size/line-height combinations
+  actually used, with a role guess (heading, title, body, label, caption).
+
+**Download tokens (DTCG)** gives one file for Figma's import or Import
+Preview. **Create variables + text styles** makes an *Inventory* collection
+with scopes set (spacing → gap, radius → corner radius…) and text styles bound
+to the font-size variables, in one undo step. Then run **Token Rebinder** with
+near colors and ±1px numbers to bind the screens to them, near-duplicates
+included.
 
 ## CLI
 
