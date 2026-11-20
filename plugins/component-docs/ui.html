@@ -1,0 +1,21 @@
+<style>
+  * { box-sizing: border-box; }
+  body { font: 12px/1.45 Inter, system-ui, sans-serif; margin: 0; padding: 14px; color: var(--figma-color-text, #1e1e1e); background: var(--figma-color-bg, #fff); }
+  h2 { font-size: 13px; margin: 0 0 2px; }
+  h3 { font-size: 12px; margin: 16px 0 6px; }
+  p { margin: 0 0 10px; color: var(--figma-color-text-secondary, #666); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  button { white-space: nowrap; font: inherit; font-weight: 600; padding: 7px 12px; border: 0; border-radius: 6px; cursor: pointer; background: var(--figma-color-bg-brand, #0d99ff); color: var(--figma-color-text-onbrand, #fff); }
+  button.secondary { background: var(--figma-color-bg-secondary, #f0f0f0); color: var(--figma-color-text, #1e1e1e); }
+  button:disabled { opacity: .5; cursor: default; }
+  #status { margin: 12px 0; min-height: 16px; color: var(--figma-color-text-secondary, #666); white-space: pre-wrap; }
+  #status.error { color: var(--figma-color-text-danger, #d92d20); }
+</style>
+<h2>Component docs</h2>
+<p>Writes a doc frame next to each component, read from the component itself: properties and variant options, the tokens each layer uses, styles, instance count, and anything not tokenized. Running it again updates the same frames.</p>
+<div class="row"><button id="sel">Document selection</button><button id="page" class="secondary">Document this page</button></div>
+<h3>For the repo</h3>
+<p>The same docs as Markdown, e.g. for <code>docs/components.md</code>.</p>
+<div class="row"><button id="mdPage" class="secondary">Markdown: this page</button><button id="mdFile" class="secondary">Markdown: every page</button></div>
+<div id="status"></div>
+<script>/*UI_JS*/</script>

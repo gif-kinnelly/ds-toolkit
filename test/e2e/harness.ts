@@ -150,4 +150,46 @@ export function inventoryFile() {
   (window as unknown as { __mock: unknown }).__mock = m;
 }
 
-Object.assign(window, { demoFile, brandFile, rebindFile, inventoryFile, value, run });
+/** A Button set with tokens, a text style and one raw stroke; a Badge component; instances elsewhere. */
+export function docsFile() {
+  const solid = (extra = {}) => ({ type: 'SOLID', visible: true, opacity: 1, color: { r: 1, g: 1, b: 1 }, ...extra });
+  const vs: Record<string, string> = {};
+  const variant = (size: string, tone: string) => node('COMPONENT', `size=${size}, tone=${tone}`, {
+    fills: [solid({ boundVariables: { color: { type: 'VARIABLE_ALIAS', id: '@' + (tone === 'primary' ? 'color/primary' : 'color/danger') } } })],
+    boundVariables: { paddingLeft: { type: 'VARIABLE_ALIAS', id: '@space/4' }, paddingRight: { type: 'VARIABLE_ALIAS', id: '@space/4' }, topLeftRadius: { type: 'VARIABLE_ALIAS', id: '@radius/md' } },
+  }, [node('TEXT', 'Label', { fills: [solid({ boundVariables: { color: { type: 'VARIABLE_ALIAS', id: '@color/on-primary' } } })], textStyleId: 'TS' }),
+    ...(tone === 'primary' ? [node('FRAME', 'Focus ring', { strokes: [solid({ color: { r: 0.5, g: 0.55, b: 0.97 } })], strokeStyleId: '', fills: [] })] : [])]);
+  const md = variant('md', 'primary');
+  const set = node('COMPONENT_SET', 'Button', {
+    description: 'Triggers an action. Use one primary button per view.', x: 0, y: 0, width: 300, height: 200,
+    componentPropertyDefinitions: {
+      size: { type: 'VARIANT', defaultValue: 'md', variantOptions: ['sm', 'md'] },
+      tone: { type: 'VARIANT', defaultValue: 'primary', variantOptions: ['primary', 'danger'] },
+      'Label#1:0': { type: 'TEXT', defaultValue: 'Continue' },
+      'Show icon#1:1': { type: 'BOOLEAN', defaultValue: false },
+    },
+  }, [variant('sm', 'primary'), md, variant('sm', 'danger'), variant('md', 'danger')]);
+  const badge = node('COMPONENT', 'Badge', { x: 0, y: 400, width: 80, height: 24, description: '', fills: [solid({ color: { r: 0.86, g: 0.99, b: 0.91 } })], fillStyleId: '' });
+  const components = node('PAGE', 'Components', {}, [set, badge]);
+  const screens = node('PAGE', 'Screens', {}, [0, 1, 2].map(() => node('INSTANCE', 'Button', { mainComponent: md })));
+  const m = installMockFigma({
+    name: 'Acme DS',
+    collections: [{ name: 'Theme', modes: ['Light'] }],
+    variables: ['color/primary', 'color/danger', 'color/on-primary'].map((n) => ({ name: n, collection: 'Theme', type: 'COLOR', values: { Light: { r: 0, g: 0, b: 0, a: 1 } } }))
+      .concat(['space/4', 'radius/md'].map((n) => ({ name: n, collection: 'Theme', type: 'FLOAT', values: { Light: 8 } })) as never[]),
+    textStyles: [{ name: 'typography/label', family: 'Inter', style: 'Medium', size: 14, lineHeight: { unit: 'PIXELS', value: 20 } }],
+    pages: [components, screens],
+  });
+  // Point the placeholder alias ids ("@name") and the text style at the real ids.
+  const fix = (n: ReturnType<typeof node>) => {
+    const re = (a: { id: string }) => { if (a.id.startsWith('@')) a.id = m.varIds.get(a.id.slice(1))!; };
+    for (const p of [...((n.fills as { boundVariables?: { color?: { id: string } } }[]) ?? [])]) if (p.boundVariables?.color) re(p.boundVariables.color);
+    for (const a of Object.values(n.boundVariables ?? {})) re(a as { id: string });
+    if (n.textStyleId === 'TS') n.textStyleId = m.textStyles[0].id as string;
+    n.children.forEach(fix);
+  };
+  fix(set);
+  (window as unknown as { __pages: unknown }).__pages = [components, screens];
+}
+
+Object.assign(window, { demoFile, brandFile, rebindFile, inventoryFile, docsFile, value, run });

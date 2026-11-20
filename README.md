@@ -12,7 +12,8 @@ break.
 | [Token Rebinder](#token-rebinder-figma-plugin) (Figma plugin) | ✅ |
 | [Drift report](#drift-report-github-action) (GitHub Action) | ✅ |
 | [System Inventory](#system-inventory-figma-plugin) (Figma plugin) | ✅ |
-| Docs from spec, slot rules, agent manifest | planned |
+| [Component Docs](#component-docs-figma-plugin) (Figma plugin) | ✅ |
+| Slot rules, agent manifest | planned |
 
 ## What it reads
 
@@ -190,6 +191,23 @@ with scopes set (spacing → gap, radius → corner radius…) and text styles b
 to the font-size variables, in one undo step. Then run **Token Rebinder** with
 near colors and ±1px numbers to bind the screens to them, near-duplicates
 included.
+
+## Component Docs (Figma plugin)
+
+Writes a doc frame next to each component, read from the component itself,
+so it can't go stale: run it again after a change and the same frames update.
+
+- Description, variant count and instances in the file.
+- **Properties**: variant axes with every option (default marked), text,
+  boolean and instance-swap properties with their defaults.
+- **Tokens**: each variable the component uses and where, collected across
+  all variants (so a token only the *danger* tone uses is listed), with
+  repeated fields collapsed ("padding", not four sides).
+- **Styles** in use, and a **Not tokenized** note listing raw values left in
+  the component.
+
+The same docs download as Markdown (this page or every page) for
+`docs/components.md` in the repo.
 
 ## CLI
 

@@ -25,13 +25,28 @@ export interface MockNode {
   fills?: unknown[]; strokes?: unknown[]; effects?: unknown[];
   fillStyleId?: string; strokeStyleId?: string; effectStyleId?: string; textStyleId?: string;
   description?: string;
-  componentPropertyDefinitions?: Record<string, { type: string; defaultValue: string | boolean }>;
+  componentPropertyDefinitions?: Record<string, { type: string; defaultValue: string | boolean; variantOptions?: string[] }>;
   mainComponent?: MockNode;
   [k: string]: unknown;
 }
 
 export function node(type: string, name: string, extra: Partial<MockNode> = {}, children: MockNode[] = []): MockNode {
   const n: MockNode = { id: nid(type), type, name, children: [], removed: false, resolvedVariableModes: {}, ...extra };
+  const data = new Map<string, string>();
+  Object.assign(n, {
+    getPluginData: (k: string) => data.get(k) ?? '',
+    setPluginData: (k: string, v: string) => { if (typeof v !== 'string') throw new Error('mock figma: plugin data must be a string'); data.set(k, v); },
+    appendChild(c: MockNode) {
+      if (c.parent) c.parent.children.splice(c.parent.children.indexOf(c), 1);
+      c.parent = n; n.children.push(c);
+    },
+    remove() {
+      if (n.parent) n.parent.children.splice(n.parent.children.indexOf(n), 1);
+      n.parent = undefined; n.removed = true;
+    },
+    resize(w: number, h: number) { n.width = w; n.height = h; },
+  });
+  n.width ??= 100; n.height ??= 40; n.x ??= 0; n.y ??= 0;
   if (type === 'TEXT') {
     // Runs: one per node unless the test sets n.runs.
     n.getStyledTextSegments = () => (n.runs as unknown[] | undefined) ?? [{ fontSize: n.fontSize ?? 14, fontName: n.fontName ?? { family: 'Inter', style: 'Regular' }, lineHeight: n.lineHeight ?? { unit: 'AUTO' } }];
@@ -144,6 +159,10 @@ export function installMockFigma(file: {
     getLocalEffectStylesAsync: async () => effectStyles,
     getLocalPaintStylesAsync: async () => paintStyles,
     getNodeByIdAsync: async (id: string) => all().find((n) => n.id === id) ?? null,
+    createFrame: () => node('FRAME', 'Frame', { fills: [], strokes: [] }),
+    createText: () => node('TEXT', 'Text', { characters: '', width: 50, height: 16 }),
+    getStyleByIdAsync: async (id: string) => [...textStyles, ...effectStyles, ...paintStyles].find((st) => st.id === id) ?? null,
+    on: () => {},
     setCurrentPageAsync: async (p: MockNode) => { (globalThis as unknown as { figma: { currentPage: MockNode } }).figma.currentPage = p; },
     commitUndo: () => { undo.commits++; },
     loadFontAsync: async (f: { family: string; style: string }) => { if (!fonts.has(`${f.family}|${f.style}`)) throw new Error(`mock figma: font ${f.family} ${f.style} not installed`); },
