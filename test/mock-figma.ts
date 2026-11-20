@@ -7,6 +7,16 @@ type Alias = { type: 'VARIABLE_ALIAS'; id: string };
 export const alias = (id: string): Alias => ({ type: 'VARIABLE_ALIAS', id });
 
 let seq = 0;
+
+/** getSharedPluginData / setSharedPluginData with Figma's namespace rule. */
+function pluginData() {
+  const store = new Map<string, string>();
+  const check = (ns: string) => { if (!/^[A-Za-z0-9_.]{3,}$/.test(ns)) throw new Error(`mock figma: bad plugin data namespace "${ns}"`); };
+  return {
+    getSharedPluginData(ns: string, key: string) { check(ns); return store.get(`${ns}/${key}`) ?? ''; },
+    setSharedPluginData(ns: string, key: string, value: string) { check(ns); if (typeof value !== 'string') throw new Error('mock figma: plugin data must be a string'); store.set(`${ns}/${key}`, value); },
+  };
+}
 const nid = (p: string) => `${p}:${++seq}`;
 
 export interface MockNode {
@@ -39,6 +49,8 @@ export function installMockFigma(file: {
   effectStyles?: { name: string; effects: unknown[] }[];
   paintStyles?: { name: string; paints: unknown[] }[];
   pages: MockNode[];
+  /** Max modes per collection (plan limit). Default 20. */
+  modeLimit?: number;
 }) {
   const collections = file.collections.map((c) => {
     const modes = c.modes.map((m) => ({ modeId: nid('mode'), name: m }));
@@ -56,7 +68,22 @@ export function installMockFigma(file: {
       const raw = v.values[m.name];
       valuesByMode[m.modeId] = typeof raw === 'string' && raw.startsWith('@') ? alias(varIds.get(raw.slice(1))!) : raw;
     }
-    return { id, name: v.name, resolvedType: v.type, variableCollectionId: c.id, valuesByMode, hiddenFromPublishing: !!v.hidden, description: '' };
+    return { id, name: v.name, resolvedType: v.type, variableCollectionId: c.id, valuesByMode, hiddenFromPublishing: !!v.hidden, description: '',
+      ...pluginData(),
+      setValueForMode(modeId: string, value: unknown) {
+        if (!c.modes.some((m) => m.modeId === modeId)) throw new Error(`mock figma: no mode ${modeId} in ${c.name}`);
+        valuesByMode[modeId] = value;
+      } };
+  });
+  for (const c of collections) Object.assign(c, pluginData(), {
+    addMode(name: string) {
+      if (c.modes.length >= (file.modeLimit ?? 20)) throw new Error('Limited to ' + (file.modeLimit ?? 20) + ' modes only');
+      const modeId = nid('mode');
+      c.modes.push({ modeId, name });
+      // Figma fills a new mode with the default mode's values.
+      for (const v of variables) if (v.variableCollectionId === c.id) v.valuesByMode[modeId] = v.valuesByMode[c.defaultModeId];
+      return modeId;
+    },
   });
   const textStyles = (file.textStyles ?? []).map((s) => ({ id: nid('S'), name: s.name, fontName: { family: s.family, style: s.style }, fontSize: s.size, lineHeight: s.lineHeight, boundVariables: s.bound ?? {} }));
   const effectStyles = (file.effectStyles ?? []).map((s) => ({ id: nid('S'), name: s.name, effects: s.effects }));
@@ -95,7 +122,9 @@ export function installMockFigma(file: {
     variables: strict('figma.variables', {
       getLocalVariableCollectionsAsync: async () => collections,
       getLocalVariablesAsync: async () => variables,
+      getVariableCollectionByIdAsync: async (id: string) => collections.find((c) => c.id === id) ?? null,
+      getVariableByIdAsync: async (id: string) => variables.find((v) => v.id === id) ?? null,
     }),
   });
-  return { varIds, textStyles, effectStyles, paintStyles };
+  return { varIds, collections, variables, textStyles, effectStyles, paintStyles };
 }

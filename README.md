@@ -8,7 +8,7 @@ break.
 | Tool | Status |
 |---|---|
 | [Import Preview](#import-preview-figma-plugin) (Figma plugin + CLI) | ✅ |
-| Multi-brand inheritance without Enterprise | planned |
+| [Brand Inheritance](#brand-inheritance-figma-plugin) (Figma plugin) | ✅ |
 | Hardcoded value → token rebinder | planned |
 | Drift report GitHub Action | planned |
 | System inventory, docs from spec, slot rules, agent manifest | planned |
@@ -64,6 +64,30 @@ npm run build
 
 In Figma: **Plugins → Development → Import plugin from manifest…** and pick
 `dist/import-preview/manifest.json`.
+
+## Brand Inheritance (Figma plugin)
+
+Figma's extended collections (a brand inherits from a core system and stores
+only its overrides) need an Enterprise plan. On other plans, brands are usually
+modes in one collection, and modes don't inherit: every new token and every
+base change has to be copied into each brand by hand.
+
+This plugin adds inheritance on top of ordinary modes:
+
+- Pick a parent for each brand mode (brands can inherit from brands:
+  *Acme Kids* → *Acme* → *Base*). Linking a mode marks values that already
+  match the parent as **inherited** and the rest as **overrides**.
+- **Sync brands** copies parent values into every inherited value, so a base
+  change or a new token reaches every brand, grandchildren included, in one pass.
+- Overrides are never written. A value someone edits by hand in Figma after a
+  sync is noticed and becomes an override instead of being overwritten.
+- Everything is previewed first: tick a pending change to keep it as an
+  override, or tick an override to go back to inheriting.
+- **Add brand** creates a mode that starts as a full copy of its parent.
+
+The setup is stored on the collection and variables as shared plugin data,
+so everyone editing the file sees the same parents and overrides. Aliases
+inherit as aliases.
 
 ## CLI
 

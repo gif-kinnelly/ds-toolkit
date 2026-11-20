@@ -53,4 +53,30 @@ export function run(codeJs: string, uiHtml: string) {
   new Function('__html__', codeJs)(uiHtml);
 }
 
-Object.assign(window, { demoFile, run });
+/** A "Brand" collection with a base mode and two brands, for Brand Inheritance. */
+export function brandFile() {
+  installMockFigma({
+    name: 'Multi-brand DS',
+    modeLimit: 4,
+    collections: [{ name: 'Brand', modes: ['Base', 'Acme', 'Zen'] }],
+    variables: [
+      { name: 'color/primary', collection: 'Brand', type: 'COLOR', values: { Base: { r: 0.31, g: 0.275, b: 0.898, a: 1 }, Acme: { r: 0.882, g: 0.114, b: 0.282, a: 1 }, Zen: { r: 0.31, g: 0.275, b: 0.898, a: 1 } } },
+      { name: 'color/surface', collection: 'Brand', type: 'COLOR', values: { Base: { r: 1, g: 1, b: 1, a: 1 }, Acme: { r: 1, g: 1, b: 1, a: 1 }, Zen: { r: 0.98, g: 0.976, b: 0.961, a: 1 } } },
+      { name: 'radius/md', collection: 'Brand', type: 'FLOAT', values: { Base: 6, Acme: 6, Zen: 6 } },
+      { name: 'font/family', collection: 'Brand', type: 'STRING', values: { Base: 'Inter', Acme: 'Inter', Zen: 'Inter' } },
+    ],
+    pages: [node('PAGE', 'Page 1')],
+  });
+}
+
+/** Test helper: read or set a value by variable and mode name. */
+export async function value(varName: string, modeName: string, set?: unknown) {
+  const f = (globalThis as unknown as { figma: { variables: { getLocalVariablesAsync(): Promise<{ name: string; variableCollectionId: string; valuesByMode: Record<string, unknown>; setValueForMode(m: string, v: unknown): void }[]>; getLocalVariableCollectionsAsync(): Promise<{ id: string; modes: { modeId: string; name: string }[] }[]> } } }).figma;
+  const v = (await f.variables.getLocalVariablesAsync()).find((x) => x.name === varName)!;
+  const c = (await f.variables.getLocalVariableCollectionsAsync()).find((x) => x.id === v.variableCollectionId)!;
+  const mode = c.modes.find((m) => m.name === modeName)!.modeId;
+  if (set !== undefined) v.setValueForMode(mode, set);
+  return v.valuesByMode[mode];
+}
+
+Object.assign(window, { demoFile, brandFile, value, run });
