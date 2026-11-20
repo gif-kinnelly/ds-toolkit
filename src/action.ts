@@ -7,7 +7,8 @@
  *  - figma-file-key + FIGMA_TOKEN: the live file via the REST variables API (Enterprise).
  */
 import { appendFileSync, readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { load, type InputFile } from './adapters/load';
 import { fromFigmaRest, type RestVariablesResponse } from './adapters/figma-rest';
 import { diff, type Severity } from './core/diff';
@@ -108,6 +109,7 @@ export async function main(env = process.env): Promise<number> {
   return 0;
 }
 
-if (process.env.GITHUB_ACTIONS === 'true' || process.argv.includes('--run')) {
+// Run only as the entry script (the Action's bundle), never when imported, e.g. by tests in CI.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().then((code) => { process.exitCode = code; }, (e) => { console.log(`::error::${(e as Error).message}`); process.exitCode = 1; });
 }

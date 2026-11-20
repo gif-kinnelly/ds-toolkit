@@ -2,7 +2,8 @@
 
 // src/action.ts
 import { appendFileSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // src/core/values.ts
 var h2 = (x) => Math.round(Math.min(1, Math.max(0, x)) * 255).toString(16).padStart(2, "0");
@@ -883,7 +884,7 @@ No drift: Figma matches the repo. \u2705`, { repo: env.GITHUB_REPOSITORY, pr: ev
   }
   return 0;
 }
-if (process.env.GITHUB_ACTIONS === "true" || process.argv.includes("--run")) {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().then((code) => {
     process.exitCode = code;
   }, (e) => {
