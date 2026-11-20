@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "ds-toolkit": "dist/cli.js"
+    "ds-toolkit": "cli/ds-toolkit.mjs"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -23,7 +23,9 @@
     "typescript": "~5.9"
   },
   "files": [
-    "dist",
+    "cli",
+    "action",
+    "action.yml",
     "README.md",
     "LICENSE"
   ]

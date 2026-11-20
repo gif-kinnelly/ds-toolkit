@@ -246,15 +246,17 @@ plausible-looking hex values.
 From the repo, in CI:
 
 ```sh
-npx ds-toolkit agent tokens/ figma-plugin/spec.json --title "Acme" --out design-system.md --json design-system.json
+npx --yes github:gif-kinnelly/ds-toolkit agent tokens/ figma-plugin/spec.json --title "Acme" --out design-system.md --json design-system.json
 ```
 
 ## CLI
 
+Not on npm yet; run it straight from GitHub (the bundle is committed, no build needed):
+
 ```sh
-npx ds-toolkit agent tokens/ --out design-system.md
-npx ds-toolkit diff tokens/ --against figma-snapshot.json
-npx ds-toolkit diff new-spec.json --against old-spec.json --format md --fail-on breaking
+npx --yes github:gif-kinnelly/ds-toolkit agent tokens/ --out design-system.md
+npx --yes github:gif-kinnelly/ds-toolkit diff tokens/ --against figma-snapshot.json
+npx --yes github:gif-kinnelly/ds-toolkit diff new-spec.json --against old-spec.json --format md --fail-on breaking
 ```
 
 Paths can be files or folders. `--format text|md|html`, `--out <file>`,

@@ -17,8 +17,8 @@ jobs:
         with: { node-version: 24, cache: npm }
       - run: npm ci
       - run: npm run check
-      - name: Committed Action bundle is up to date
-        run: git diff --exit-code -- action/ || (echo "::error::Run npm run build and commit action/index.js" && exit 1)
+      - name: Committed bundles are up to date
+        run: git diff --exit-code -- action/ cli/ || (echo "::error::Run npm run build and commit action/ and cli/" && exit 1)
       - name: End-to-end plugin tests (Chrome)
         run: npm run e2e # uses the runner's Google Chrome
 
