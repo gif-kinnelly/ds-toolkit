@@ -10,7 +10,7 @@ break.
 | [Import Preview](#import-preview-figma-plugin) (Figma plugin + CLI) | ✅ |
 | [Brand Inheritance](#brand-inheritance-figma-plugin) (Figma plugin) | ✅ |
 | [Token Rebinder](#token-rebinder-figma-plugin) (Figma plugin) | ✅ |
-| Drift report GitHub Action | planned |
+| [Drift report](#drift-report-github-action) (GitHub Action) | ✅ |
 | System inventory, docs from spec, slot rules, agent manifest | planned |
 
 ## What it reads
@@ -116,6 +116,54 @@ one go.
 - **Show** selects the layers in a row. One **Bind** is one undo step, and
   layers that changed since the scan are skipped, not overwritten.
 - Library variables can be suggested too (More options).
+
+## Drift report (GitHub Action)
+
+On every PR, compares the tokens or specs in your repo with Figma and posts
+one sticky comment (updated, never duplicated) plus a job summary: what's
+different, ranked by what a sync would break, with how many layers use each
+token.
+
+```yaml
+# .github/workflows/design-drift.yml
+name: Design drift
+on: pull_request
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: gif-kinnelly/ds-toolkit@main
+        with:
+          source: tokens/                         # DTCG, Figma export, or a component spec
+          figma-snapshot: design/figma-snapshot.json
+          fail-on: breaking                       # or "review", or "never" (default)
+```
+
+**Any Figma plan:** in the Import Preview plugin, click *Export this file as a
+snapshot* and commit the JSON. The snapshot includes usage counts, so the
+report can say "37 layers bound to it". Re-export when the Figma file changes.
+
+**Enterprise:** compare with the live file instead:
+
+```yaml
+      - uses: gif-kinnelly/ds-toolkit@main
+        env:
+          FIGMA_TOKEN: ${{ secrets.FIGMA_TOKEN }}  # needs file_variables:read
+        with:
+          source: tokens/
+          figma-file-key: AbC123xyz
+```
+
+Outputs: `breaking`, `review`, `safe`, `changes`. Other inputs: `missing`
+(keep/remove), `whole-file`, `collection`, `comment`, `title`. Fork PRs that
+can't comment still get the job summary.
+
+This repo's own CI runs the Action on `examples/`, so every run shows a sample
+report.
 
 ## CLI
 

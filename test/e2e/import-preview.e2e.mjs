@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 
 const require = createRequire(import.meta.url);
 let chromium;
-try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require('/opt/npm-tools/node_modules/playwright')); }
+({ chromium } = require('playwright-core'));
 
 const harness = (await build({ entryPoints: ['test/e2e/harness.ts'], bundle: true, write: false, format: 'iife', target: 'es2020' })).outputFiles[0].text;
 const code = readFileSync('dist/import-preview/code.js', 'utf8');
@@ -43,7 +43,7 @@ for (const [name, json] of Object.entries(files)) {
   paths.push({ p, name });
 }
 
-const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const page = await browser.newPage({ viewport: { width: 500, height: 960 }, deviceScaleFactor: 2 });
 page.on('pageerror', (e) => { console.error('page error:', e.message); process.exitCode = 1; });
 await page.setContent('<!DOCTYPE html><body style="margin:20px;background:#f5f5f5"></body>');

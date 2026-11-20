@@ -5,13 +5,13 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 let chromium;
-try { ({ chromium } = require('playwright')); } catch { ({ chromium } = require('/opt/npm-tools/node_modules/playwright')); }
+({ chromium } = require('playwright-core'));
 
 export async function openPlugin(plugin, setup, { height = 960 } = {}) {
   const harness = (await build({ entryPoints: ['test/e2e/harness.ts'], bundle: true, write: false, format: 'iife', target: 'es2020' })).outputFiles[0].text;
   const code = readFileSync(`dist/${plugin}/code.js`, 'utf8');
   const ui = readFileSync(`dist/${plugin}/ui.html`, 'utf8');
-  const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
+  const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome', args: ['--no-sandbox'] });
   const page = await browser.newPage({ viewport: { width: 560, height }, deviceScaleFactor: 2 });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));

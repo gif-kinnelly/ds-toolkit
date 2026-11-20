@@ -35,6 +35,8 @@ export interface Collection {
   /** First is the default mode. */
   modes: string[];
   variables: Variable[];
+  /** True when the source doesn't say which mode is the default (DTCG files, one per mode). */
+  defaultUnknown?: boolean;
   /** Name of the collection this one extends (Figma extended collections, or this kit's brand inheritance). */
   extends?: string;
 }

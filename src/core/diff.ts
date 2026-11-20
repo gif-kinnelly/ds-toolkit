@@ -124,15 +124,20 @@ function diffCollections(src: Collection[], tgt: Collection[], rs: Resolver, rt:
 function mapModes(s: Collection, t: Collection): Map<string, string> {
   const map = new Map<string, string>();
   for (const m of s.modes) if (t.modes.includes(m)) map.set(m, m);
-  const sd = s.modes[0], td = t.modes[0];
-  if (sd && td && !map.has(sd) && !s.modes.includes(td)) map.set(sd, td);
+  const unS = s.modes.filter((m) => !map.has(m));
+  const unT = t.modes.filter((m) => !s.modes.includes(m));
+  if (unS.length === 1 && unT.length === 1) map.set(unS[0], unT[0]); // one each side: a rename
+  else {
+    const sd = s.modes[0], td = t.modes[0];
+    if (!s.defaultUnknown && sd && td && !map.has(sd) && !s.modes.includes(td)) map.set(sd, td);
+  }
   return map;
 }
 
 function diffModes(s: Collection, t: Collection, modeMap: Map<string, string>, missing: 'keep' | 'remove', out: Change[]) {
   const mapped = new Set(modeMap.values());
   for (const [sm, tm] of modeMap) {
-    if (sm !== tm) out.push({ severity: 'review', area: 'variables', kind: 'renamed', subject: sub(s.name, `mode ${tm} → ${sm}`), detail: `The default mode is renamed and keeps its values. Anything that refers to the mode by name (code, other plugins) needs updating.` });
+    if (sm !== tm) out.push({ severity: 'review', area: 'variables', kind: 'renamed', subject: sub(s.name, `mode ${tm} → ${sm}`), detail: `Looks like a renamed mode; it keeps its values. Anything that refers to the mode by name (code, other plugins) needs updating.` });
   }
   const modeCount = new Set([...t.modes, ...s.modes.filter((m) => !modeMap.has(m))]).size;
   for (const m of s.modes) {
@@ -146,7 +151,7 @@ function diffModes(s: Collection, t: Collection, modeMap: Map<string, string>, m
       ? { severity: 'breaking', area: 'variables', kind: 'removed', subject: sub(s.name, `mode ${m}`), detail: `Mode will be deleted. Frames set to "${m}" fall back to the default mode and its values are lost.` }
       : { severity: 'safe', area: 'variables', kind: 'kept', subject: sub(s.name, `mode ${m}`), detail: `Mode isn't in the source; its values are left as they are.` });
   }
-  if (s.modes[0] && t.modes[0] && s.modes[0] !== t.modes[0] && t.modes.includes(s.modes[0])) {
+  if (!s.defaultUnknown && s.modes[0] && t.modes[0] && s.modes[0] !== t.modes[0] && t.modes.includes(s.modes[0])) {
     out.push({ severity: 'review', area: 'variables', kind: 'changed', subject: sub(s.name, 'default mode'), detail: `Default mode changes from "${t.modes[0]}" to "${s.modes[0]}". Layers with no mode set will switch.` });
   }
 }

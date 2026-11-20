@@ -1,0 +1,45 @@
+name: Design system drift
+description: Compare design tokens or component specs in the repo with Figma, and report drift on PRs.
+author: ds-toolkit
+branding:
+  icon: git-pull-request
+  color: purple
+inputs:
+  source:
+    description: Token/spec files or folders in the repo (comma or newline separated). DTCG, Figma variables export, component spec or snapshot.
+    required: true
+  figma-snapshot:
+    description: Path to a snapshot exported by the Import Preview plugin and committed to the repo. Works on any Figma plan.
+    required: false
+  figma-file-key:
+    description: Compare with the live file instead (REST variables API; Enterprise only). Needs FIGMA_TOKEN in env.
+    required: false
+  collection:
+    description: Collection name for DTCG files not in a folder.
+    required: false
+  missing:
+    description: What your sync does with things only in Figma — keep or remove.
+    default: keep
+  whole-file:
+    description: Also report collections, styles and components the repo doesn't mention.
+    default: 'false'
+  fail-on:
+    description: Fail the check on "breaking", "review", or "never".
+    default: never
+  comment:
+    description: Post (and keep updating) one comment on the PR.
+    default: 'true'
+  title:
+    description: Report title.
+    default: 'Design system drift: code → Figma'
+  github-token:
+    description: Token for the PR comment.
+    default: ${{ github.token }}
+outputs:
+  breaking: { description: Number of breaking changes }
+  review: { description: Number of changes to review }
+  safe: { description: Number of safe changes }
+  changes: { description: Total changes }
+runs:
+  using: node24
+  main: action/index.js

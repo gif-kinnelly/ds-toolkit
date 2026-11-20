@@ -1,0 +1,36 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: npm run check
+      - name: Committed Action bundle is up to date
+        run: git diff --exit-code -- action/ || (echo "::error::Run npm run build and commit action/index.js" && exit 1)
+      - name: End-to-end plugin tests (Chrome)
+        run: npm run e2e # uses the runner's Google Chrome
+
+  # Dogfood: run this repo's own Action on the example tokens and snapshot.
+  drift-example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./
+        id: drift
+        with:
+          source: examples/tokens
+          figma-snapshot: examples/figma-snapshot.json
+          title: 'Example drift report (examples/tokens → examples/figma-snapshot.json)'
+      - run: echo "breaking=${{ steps.drift.outputs.breaking }} review=${{ steps.drift.outputs.review }}"

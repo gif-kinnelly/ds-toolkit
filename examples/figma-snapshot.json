@@ -1,0 +1,208 @@
+{
+  "source": "Figma: Example DS (snapshot)",
+  "collections": [
+    {
+      "name": "Primitives",
+      "modes": [
+        "Value"
+      ],
+      "variables": [
+        {
+          "name": "palette/indigo/400",
+          "type": "COLOR",
+          "values": {
+            "Value": {
+              "kind": "color",
+              "hex": "#818cf8"
+            }
+          },
+          "usage": 0
+        },
+        {
+          "name": "palette/indigo/600",
+          "type": "COLOR",
+          "values": {
+            "Value": {
+              "kind": "color",
+              "hex": "#4f46e5"
+            }
+          },
+          "usage": 0
+        },
+        {
+          "name": "palette/red/400",
+          "type": "COLOR",
+          "values": {
+            "Value": {
+              "kind": "color",
+              "hex": "#f87171"
+            }
+          },
+          "usage": 0
+        },
+        {
+          "name": "palette/red/600",
+          "type": "COLOR",
+          "values": {
+            "Value": {
+              "kind": "color",
+              "hex": "#dc2626"
+            }
+          },
+          "usage": 0
+        },
+        {
+          "name": "palette/zinc/50",
+          "type": "COLOR",
+          "values": {
+            "Value": {
+              "kind": "color",
+              "hex": "#fafafa"
+            }
+          },
+          "usage": 0
+        },
+        {
+          "name": "palette/zinc/900",
+          "type": "COLOR",
+          "values": {
+            "Value": {
+              "kind": "color",
+              "hex": "#18181b"
+            }
+          },
+          "usage": 0
+        },
+        {
+          "name": "palette/white",
+          "type": "COLOR",
+          "values": {
+            "Value": {
+              "kind": "color",
+              "hex": "#ffffff"
+            }
+          },
+          "usage": 0
+        }
+      ]
+    },
+    {
+      "name": "Theme",
+      "modes": [
+        "Light",
+        "Dark"
+      ],
+      "variables": [
+        {
+          "name": "color/primary",
+          "type": "COLOR",
+          "values": {
+            "Light": {
+              "kind": "alias",
+              "name": "palette/indigo/600"
+            },
+            "Dark": {
+              "kind": "alias",
+              "name": "palette/indigo/400"
+            }
+          },
+          "usage": 214
+        },
+        {
+          "name": "color/danger",
+          "type": "COLOR",
+          "values": {
+            "Light": {
+              "kind": "alias",
+              "name": "palette/red/600"
+            },
+            "Dark": {
+              "kind": "alias",
+              "name": "palette/red/400"
+            }
+          },
+          "usage": 37
+        },
+        {
+          "name": "color/surface",
+          "type": "COLOR",
+          "values": {
+            "Light": {
+              "kind": "alias",
+              "name": "palette/white"
+            },
+            "Dark": {
+              "kind": "alias",
+              "name": "palette/zinc/900"
+            }
+          },
+          "usage": 380
+        },
+        {
+          "name": "color/text",
+          "type": "COLOR",
+          "values": {
+            "Light": {
+              "kind": "alias",
+              "name": "palette/zinc/900"
+            },
+            "Dark": {
+              "kind": "alias",
+              "name": "palette/zinc/50"
+            }
+          },
+          "usage": 512
+        },
+        {
+          "name": "radius/md",
+          "type": "FLOAT",
+          "values": {
+            "Light": {
+              "kind": "number",
+              "n": 6
+            },
+            "Dark": {
+              "kind": "number",
+              "n": 6
+            }
+          },
+          "usage": 96
+        },
+        {
+          "name": "space/3",
+          "type": "FLOAT",
+          "values": {
+            "Light": {
+              "kind": "number",
+              "n": 12
+            },
+            "Dark": {
+              "kind": "number",
+              "n": 12
+            }
+          },
+          "usage": 140
+        },
+        {
+          "name": "space/4",
+          "type": "FLOAT",
+          "values": {
+            "Light": {
+              "kind": "number",
+              "n": 16
+            },
+            "Dark": {
+              "kind": "number",
+              "n": 16
+            }
+          },
+          "usage": 201
+        }
+      ],
+      "defaultUnknown": true
+    }
+  ],
+  "styles": [],
+  "components": [],
+  "hasUsage": true
+}

@@ -128,3 +128,14 @@ test('default mode renamed, not added: values compared across it', () => {
   const bg = diff(s, t).changes.find((c) => c.subject === 'Theme › bg')!;
   assert.deepEqual(bg.rows, [{ label: 'Light', before: '#ffffff', after: '#fafafa' }]);
 });
+
+test('DTCG files per mode: file order is not a default-mode change', async () => {
+  const { fromDtcg } = await import('../src/adapters/dtcg');
+  const tok = (hex: string) => ({ c: { $type: 'color', $value: hex } });
+  const src = fromDtcg([{ path: 'Theme/Dark.tokens.json', json: tok('#000000') }, { path: 'Theme/Light.tokens.json', json: tok('#ffffff') }]);
+  assert.equal(src.collections[0].defaultUnknown, true);
+  const fig: Snapshot = { source: 'Figma', styles: [], components: [], collections: [{ name: 'Theme', modes: ['Light', 'Dark'], variables: [
+    { name: 'c', type: 'COLOR', values: { Light: col('#ffffff'), Dark: col('#000000') } },
+  ] }] };
+  assert.deepEqual(diff(src, fig).changes, []);
+});

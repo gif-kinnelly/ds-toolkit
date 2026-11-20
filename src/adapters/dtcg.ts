@@ -220,6 +220,11 @@ export function fromDtcg(files: DtcgFile[], opts: DtcgOptions = {}): Snapshot {
     }
   }
 
+  // Separate files per mode don't say which is the default; inline modes do (first listed).
+  const filesPer = new Map<string, number>();
+  for (const f of files) { const { collection } = nameFromPath(f.path, fallback); filesPer.set(collection, (filesPer.get(collection) ?? 0) + 1); }
+  for (const c of collections.values()) if ((filesPer.get(c.name) ?? 0) > 1) c.defaultUnknown = true;
+
   // Aliases with no $type take the type of what they point at.
   const all = new Map<string, Variable>();
   for (const m of vars.values()) for (const [n, v] of m) all.set(n, v);

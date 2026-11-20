@@ -1,0 +1,11 @@
+{
+  "color": {
+    "$type": "color",
+    "primary": { "$value": "{palette.indigo.400}" },
+    "error": { "$value": "{palette.red.400}" },
+    "surface": { "$value": "{palette.zinc.900}" },
+    "text": { "$value": "{palette.zinc.50}" }
+  },
+  "radius": { "md": { "$type": "dimension", "$value": "6px" } },
+  "space": { "$type": "dimension", "3": { "$value": "12px" }, "4": { "$value": "16px" } }
+}

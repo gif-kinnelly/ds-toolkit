@@ -1,0 +1,9 @@
+{
+  "palette": {
+    "$type": "color",
+    "indigo": { "400": { "$value": "#818cf8" }, "600": { "$value": "#4f46e5" }, "700": { "$value": "#4338ca" } },
+    "red": { "400": { "$value": "#f87171" }, "600": { "$value": "#dc2626" } },
+    "zinc": { "50": { "$value": "#fafafa" }, "900": { "$value": "#18181b" } },
+    "white": { "$value": "#ffffff" }
+  }
+}
